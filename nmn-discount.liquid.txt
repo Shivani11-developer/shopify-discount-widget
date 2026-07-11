@@ -1,0 +1,277 @@
+{{ 'nmn.css' | asset_url | stylesheet_tag }}
+<script>
+window.Shopify = window.Shopify || {};
+Shopify.currency = {
+  active: "{{ cart.currency.iso_code }}"
+};
+</script>
+<script src="{{ 'nmn.js' | asset_url }}" defer="defer"></script>
+
+
+
+<div class="nmn-wrap" data-section-id="{{ section.id }}">
+  {% if product %}
+  <div class="nmn-product">
+<div class="nmn-gallery">
+
+    <!-- Main Slider -->
+    <div class="nmn-slider">
+
+        <button class="slider-btn prev">❮</button>
+
+        <div class="slider-track">
+
+            {% for image in product.images %}
+                <div class="slide {% if forloop.first %}active{% endif %}">
+                    <img
+                        src="{{ image | image_url: width:900 }}"
+                        alt="{{ product.title }}"
+                        height=""
+                        width=""
+                    >
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <button class="slider-btn next">❯</button>
+
+    </div>
+
+    <!-- Thumbnails -->
+
+  <div class="thumbnail-slider">
+
+    <button class="thumb-btn thumb-prev">❮</button>
+
+    <div class="thumbnail-wrapper">
+
+        <div class="thumbnail-track">
+
+        {% for image in product.images %}
+
+            <img
+            class="thumbnail {% if forloop.first %}active{% endif %}"
+            src="{{ image | image_url: width:120 }}"
+            data-index="{{ forloop.index0 }}"
+            alt="{{ product.title }}"
+            width=""
+            height=""
+            >
+
+        {% endfor %}
+
+        </div>
+
+    </div>
+
+    <button class="thumb-btn thumb-next">❯</button>
+
+</div>
+
+</div>
+
+    <div class="nmn-product__info">
+      <div class="nmn-rating">
+        <span class="stars">★★★★½</span>
+        <span class="rating-val">{{ product.metafields.custom.rating | default: "4.61" }}</span>
+        <a href="#reviews" class="reviews-link">{{ product.metafields.custom.review_count | default: "150" }} reviews</a>
+      </div>
+
+      <h1 class="nmn-title">{{ product.title }}</h1>
+      {% comment %} <p class="nmn-subtitle">Clinically Studied · 30 Vegetarian Capsules</p> {% endcomment %}
+       <div class="product-info__block-item" data-block-id="points_description_y4ppgH" data-block-type="Points-Description">
+<div class="nmn-block">
+
+  <div class="nmn-block__top">
+
+    <div class="nmn-block__rank">
+      <span class="nmn-block__hash">#1</span>
+      <p>Doctor Recommended NMN Brand*</p>
+    </div>
+
+
+  </div>
+
+  <div class="nmn-block__content">
+
+    <h4>Why β-NMN?</h4>
+
+    <ul class="nmn-block__list">
+      <li>Steadier energy</li>
+      <li>Healthy ageing support</li>
+      <li>Metabolic balance</li>
+      <li>Sharper mental performance</li>
+    </ul>
+
+  </div>
+
+</div>
+
+<div class="nmn-block">
+  <p class="nmn-label">Select strength</p>
+
+  <div class="nmn-variants" role="group">
+    {% assign selected_caps = '' %}
+    {% for block in section.blocks %}
+
+      {% assign card_product = block.settings.product %}
+
+      {% if card_product != blank %}
+
+         {% if card_product.id == product.id %}
+          {% assign selected_caps = block.settings.caps | remove: 'caps' | strip | plus: 0 %}
+        {% endif %}
+        <div
+          type="button"
+          class="nmn-variant{% if product.title == card_product.title %} is-selected{% endif %}"
+          data-variant-id="{{ card_product.selected_or_first_available_variant.id }}"
+          data-price="{{ card_product.price | divided_by: 100.0 }}"
+          data-available="{{ card_product.available }}"
+          {{ block.shopify_attributes }}
+          data-caps="{{ block.settings.caps | remove: 'caps' | strip }}"
+        >
+          <a href="{{ card_product.url }}">
+
+          <span class="v-title">
+            {{ card_product.title | split: "|" | last | strip }}
+          </span>
+
+          <span class="v-sub">
+            {{ block.settings.caps }} 
+          </span>
+
+          <span class="v-price">
+            {{ card_product.price | money_without_trailing_zeros }}/bottle
+          </span>
+         </a>
+        </div>
+
+      {% endif %}
+
+    {% endfor %}
+
+  </div>
+</div>
+      <div class="nmn-block">
+        <p class="nmn-label">How many bottles?</p>
+        <div class="nmn-qty">
+          <button type="button" class="qty-btn qty-minus" aria-label="Decrease quantity">−</button>
+          <input type="number" class="qty-input" value="1" min="1" max="99" inputmode="numeric">
+          <button type="button" class="qty-btn qty-plus" aria-label="Increase quantity">+</button>
+        </div>
+      </div>
+
+      {% comment %}
+      <div class="nmn-block">
+        <p class="nmn-label">Purchase type</p>
+        <div class="nmn-purchase-toggle">
+          <label class="ptoggle is-active">
+            <input type="radio" name="purchase-type-{{ section.id }}" value="onetime" checked>
+            <span>One-time purchase</span>
+          </label>
+          <label class="ptoggle">
+            <input type="radio" name="purchase-type-{{ section.id }}" value="subscribe">
+            <span>Subscribe &amp; save extra 5%</span>
+          </label>
+        </div>
+      </div>
+      {% endcomment %}
+
+      <div class="nmn-block nmn-volum-tier">
+        <p class="nmn-label">Volume discount</p>
+        <div class="nmn-tierbar">
+          <div class="tierbar-track"><div class="tierbar-fill"></div></div>
+          <div class="tierbar-labels">
+            <div class="tier-stop is-active" data-min="1" data-max="1">
+              <span class="dot"></span><span class="t-name">1 bottle</span><span class="t-pct">Base</span>
+            </div>
+            <div class="tier-stop" data-min="2" data-max="3">
+              <span class="dot"></span><span class="t-name">2–3</span><span class="t-pct">10% off</span>
+            </div>
+            <div class="tier-stop" data-min="4" data-max="5">
+              <span class="dot"></span><span class="t-name">4–5</span><span class="t-pct">18% off</span>
+            </div>
+            <div class="tier-stop" data-min="6" data-max="9999">
+              <span class="dot"></span><span class="t-name">6+</span><span class="t-pct">25% off</span>
+            </div>
+          </div>
+        </div>
+  
+      </div>
+            
+         <!-- NUDGE -->
+      <div class="nudge hidden" id="nudge">
+        <span class="nudge-icon">💡</span>
+        <span id="nudgeText">Add <strong>1 more bottle</strong> → unlock <strong>10% off</strong> and save an extra <strong>₹576</strong></span>
+      </div>
+
+      {% assign per_cap_price = product.price | divided_by: selected_caps %}
+      <div class="nmn-price-card">
+        <div class="price-row">
+          <span class="final-price"><span class="js-final-price">{{  product.price | money_without_trailing_zeros }}</span></span>
+          <span class="compare-price"><span class="js-compare-price"></span></span>
+          <span class="per-cap"><span class="js-per-cap">{{ per_cap_price | money_without_trailing_zeros }}</span>/cap</span>
+        </div>
+        <div class="save-row hidden">
+          <span class="save-pill"><span class="js-save-pct">0</span>% OFF</span>
+          <span class="save-text">You save <span class="js-save-amt"></span></span>
+        </div>
+      </div>
+
+
+      <button type="button" class="nmn-add-to-cart" data-product-id="{{ product.id }}">
+        <span class="btn-label">Add to Cart</span>
+      </button>
+
+  </div> 
+<!-- CLOSE product-info__block-item -->
+
+</div>
+<!-- CLOSE nmn-product__info -->
+
+</div>
+<!-- CLOSE nmn-product -->
+  {% else %}
+    <div class="nmn-empty-state">
+      Pick a product for this section in the theme editor (Section settings → Product).
+    </div>
+  {% endif %}
+</div>
+
+<!-- Sticky mobile savings bar -->
+<div class="nmn-sticky-bar" aria-live="polite">
+  <span class="sticky-icon">💸</span>
+  <span>You save <strong>₹<span class="js-sticky-save">0</span></strong> at this quantity — <span class="js-sticky-tier">1 bottle</span></span>
+</div>
+
+
+{% schema %}
+{
+  "name": "NMN Volume Discount",
+  "settings": [
+  ],
+  "blocks": [
+  {
+    "type": "strength_product",
+    "name": "Strength Product",
+    "settings": [
+      {
+        "type": "product",
+        "id": "product",
+        "label": "Select Product"
+      },
+      {
+        "type": "text",
+        "id": "caps",
+        "label": "Capsules Text",
+        "default": "30 caps"
+      }
+    ]
+  }
+],
+  "presets": [
+    { "name": "NMN Volume Discount" }
+  ]
+}
+{% endschema %}

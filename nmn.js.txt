@@ -1,0 +1,458 @@
+(function() {
+    var price = 0;
+    var variantId = "";
+    var qty = 1;
+    var subscribe = false;
+    var discount = 0;
+    var save = 0;
+    var caps = 30;
+
+    // MONEY FORMAT FUNCTION YAHAN ADD KARO
+    function formatMoney(price) {
+        var amount = Math.round(Number(price));
+
+        return "Rs. " + amount;
+    }
+
+    var addButton = document.querySelector(".nmn-add-to-cart");
+
+
+    // FIRST VARIANT
+
+    var selectedVariant = document.querySelector(".nmn-variant.is-selected");
+
+        if (selectedVariant) {
+            price = Number(selectedVariant.dataset.price);
+            caps = Number(selectedVariant.dataset.caps);
+            variantId = selectedVariant.dataset.variantId;
+
+            if (selectedVariant.dataset.available === "false" && addButton) {
+                addButton.disabled = true;
+            }
+        }
+
+    // QUANTITY
+
+    var input = document.querySelector(".qty-input");
+    var plus = document.querySelector(".qty-plus");
+    var minus = document.querySelector(".qty-minus");
+    plus.onclick = function() {
+        qty++;
+        input.value = qty;
+        updatePrice();
+    }
+
+    minus.onclick = function() {
+        if (qty > 1) {
+            qty--;
+        }
+        input.value = qty;
+        updatePrice();
+    }
+
+    input.onchange = function() {
+        qty = Number(input.value);
+        if (qty < 1) {
+            qty = 1;
+        }
+        input.value = qty;
+        updatePrice();
+
+    }
+    // SUBSCRIPTION
+    var purchase = document.querySelectorAll(
+        '.nmn-purchase-toggle input'
+    );
+
+    for (var i = 0; i < purchase.length; i++) {
+        purchase[i].onchange = function() {
+            var labels = document.querySelectorAll(".ptoggle");
+            labels.forEach(function(label) {
+                label.classList.remove("is-active");
+            });
+            this.parentElement.classList.add("is-active");
+            subscribe = this.value === "subscribe";
+            updatePrice();
+
+        }
+    }
+
+    // PRICE FUNCTION
+
+    function updatePrice() {
+        var total = price * qty;
+        discount = 0;
+
+        // volume discount
+
+        if (qty >= 2 && qty <= 3) {
+            discount = 10;
+        } else if (qty >= 4 && qty <= 5) {
+            discount = 18;
+        } else if (qty >= 6) {
+            discount = 25;
+        }
+
+        // subscription extra
+        if (subscribe) {
+            discount = discount + 5;
+        }
+
+        var save = total * discount / 100;
+        var final = total - save;
+        // 
+        var saveRow = document.querySelector(".save-row");
+
+        if (saveRow) {
+
+            if (discount > 0) {
+                saveRow.classList.remove("hidden");
+            } else {
+                saveRow.classList.add("hidden");
+            }
+
+        }
+        // 
+        document.querySelector(".js-final-price").innerHTML =
+            formatMoney(final);
+        document.querySelector(".js-compare-price").innerHTML =
+            formatMoney(total);
+        document.querySelector(".js-save-pct").innerHTML =
+            discount;
+        document.querySelector(".js-save-amt").innerHTML =
+            formatMoney(save);
+       var perCap = final / (caps * qty);
+
+        document.querySelector(".js-per-cap").innerHTML =
+            formatMoney(perCap.toFixed(2));
+
+        updateStickyBar(save);
+        updateTiers();
+        updateNudgeText(total, discount);
+
+    }
+
+
+    // updatePrice();
+
+    function updateStickyBar(save) {
+        var sticky = document.querySelector(".nmn-sticky-bar");
+        var stickySave = document.querySelector(".js-sticky-save");
+        var stickyTier = document.querySelector(".js-sticky-tier");
+
+        if (!sticky) return;
+
+        if (save > 0) {
+            sticky.classList.add("is-visible");
+
+
+            if (stickySave) {
+                stickySave.innerHTML = Math.round(save);
+            }
+
+            if (stickyTier) {
+                if (qty >= 6) {
+                    stickyTier.innerHTML = "6+ Bottles";
+                } else if (qty >= 4) {
+                    stickyTier.innerHTML = "4-5 Bottles";
+                } else if (qty >= 2) {
+                    stickyTier.innerHTML = "2-3 Bottles";
+
+                } else {
+                    stickyTier.innerHTML = "1 Bottle";
+
+                }
+            }
+
+        } else {
+            sticky.classList.remove("is-visible");
+        }
+
+    }
+
+    function updateTiers() {
+        var tiers = document.querySelectorAll(".tier-stop");
+
+        for (var i = 0; i < tiers.length; i++) {
+            tiers[i].classList.remove("is-active");
+        }
+
+        if (qty == 1 && tiers[0]) {
+
+            tiers[0].classList.add("is-active");
+
+        } else if (qty >= 2 && qty <= 3 && tiers[1]) {
+            tiers[1].classList.add("is-active");
+        } else if (qty >= 4 && qty <= 5 && tiers[2]) {
+            tiers[2].classList.add("is-active");
+        } else if (qty >= 6 && tiers[3]) {
+            tiers[3].classList.add("is-active");
+        }
+
+        var fill = document.querySelector(".tierbar-fill");
+
+        if (fill) {
+            var width = ((qty - 1) / 5) * 100;
+
+            if (width > 100) {
+                width = 100;
+            }
+
+            fill.style.width = width + "%";
+        }
+    }
+
+    function updateNudgeText(total, discount) {
+
+        var nudge = document.querySelector("#nudgeText");
+
+        if (!nudge) return;
+
+        var nextDiscount = 0;
+        var nextQty = 0;
+
+        if (qty < 2) {
+            nextDiscount = 10;
+            nextQty = 2;
+        } else if (qty >= 2 && qty <= 3) {
+            nextDiscount = 18;
+            nextQty = 4;
+        } else if (qty >= 4 && qty <= 5) {
+            nextDiscount = 25;
+            nextQty = 6;
+        }
+
+        // already max discount
+        if (qty >= 6) {
+            nudge.innerHTML = "You unlocked the maximum 25% discount 🎉";
+            return;
+        }
+
+
+        var nextTotal = price * nextQty;
+        var nextSave = nextTotal * nextDiscount / 100;
+
+        var currentSave = total * discount / 100;
+
+        var extraSave = nextSave - currentSave;
+
+
+        nudge.innerHTML =
+            "Add " + (nextQty - qty) +
+            " more bottle → unlock " +
+            nextDiscount +
+            "% off and save an extra " +
+            formatMoney(extraSave);
+    }
+
+    // ADD TO CART BUTTON LOADING
+
+    // var addButton = document.querySelector(".nmn-add-to-cart");
+
+    if (addButton) {
+        addButton.onclick = function() {
+            addButton.disabled = true;
+            var total = price * qty;
+
+            var cartDiscount = 0;
+
+            if (qty >= 2 && qty <= 3) {
+                cartDiscount = 10;
+            } else if (qty >= 4 && qty <= 5) {
+                cartDiscount = 18;
+            } else if (qty >= 6) {
+                cartDiscount = 25;
+            }
+
+
+            var cartSave = total * cartDiscount / 100;
+
+            addButton.querySelector(".btn-label").innerHTML = "Adding...";
+            fetch("/cart/add.js", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        items: [{
+                            id: variantId,
+                            quantity: qty,
+
+                            properties: {
+
+                                "Volume Discount": cartDiscount > 0 ?
+                                    cartDiscount + "% OFF" :
+                                    "",
+
+                                "Discount Amount": cartDiscount > 0 ?
+                                    formatMoney(cartSave) :
+                                    ""
+
+
+                            }
+                        }],
+                        sections: "cart-drawer,cart-icon-bubble",
+                        sections_url: window.location.pathname
+                    })
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    var drawer = document.querySelector("cart-drawer");
+
+                    if (drawer && data.sections) {
+
+                        drawer.renderContents(data);
+
+                        // Remove empty state after adding item
+                        setTimeout(function() {
+
+                            var cartDrawer = document.querySelector("cart-drawer");
+
+                            if (cartDrawer) {
+                                cartDrawer.classList.remove("is-empty");
+
+                                var emptyCart = cartDrawer.querySelector(".cart__empty-text");
+                                if (emptyCart) {
+                                    emptyCart.style.display = "none";
+                                }
+                            }
+
+                        }, 300);
+
+
+                    } else {
+                        location.reload();
+                    }
+                    addButton.disabled = false;
+                    addButton.querySelector(".btn-label").innerHTML =
+                        "Add to Cart";
+                })
+                .catch(function(error) {
+                    console.log(error);
+                    alert("Product add nahi hua. Dobara try karein.");
+                    addButton.disabled = false;
+                    addButton.querySelector(".btn-label").innerHTML =
+                        "Add to Cart";
+                });
+
+        };
+    }
+})();
+
+const slides = document.querySelectorAll(".slide");
+const thumbnails = document.querySelectorAll(".thumbnail");
+
+const mainTrack = document.querySelector(".slider-track");
+
+const nextBtn = document.querySelector(".next");
+const prevBtn = document.querySelector(".prev");
+
+
+const thumbTrack = document.querySelector(".thumbnail-track");
+const thumbNext = document.querySelector(".thumb-next");
+const thumbPrev = document.querySelector(".thumb-prev");
+
+
+let current = 0;
+
+
+// MAIN SLIDER
+
+function showSlide(index) {
+
+    if (index >= slides.length) {
+        index = 0;
+    }
+
+    if (index < 0) {
+        index = slides.length - 1;
+    }
+
+
+    mainTrack.style.transform =
+        `translateX(-${index * 100}%)`;
+
+
+    thumbnails.forEach(img => {
+        img.classList.remove("active");
+    });
+
+
+    thumbnails[index].classList.add("active");
+
+
+    current = index;
+
+
+    // auto scroll thumbnail
+
+    thumbnails[index].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center"
+    });
+
+}
+
+
+
+nextBtn.addEventListener("click", () => {
+
+    showSlide(current + 1);
+
+});
+
+
+prevBtn.addEventListener("click", () => {
+
+    showSlide(current - 1);
+
+});
+
+
+
+thumbnails.forEach(img => {
+
+    img.addEventListener("click", () => {
+
+        showSlide(Number(img.dataset.index));
+
+    });
+
+});
+
+
+
+
+// THUMBNAIL SLIDER
+let thumbPosition = 0;
+
+
+thumbNext.addEventListener("click", () => {
+
+    thumbPosition += 260;
+
+    if (thumbPosition > thumbTrack.scrollWidth - 510) {
+        thumbPosition = thumbTrack.scrollWidth - 510;
+    }
+
+    thumbTrack.style.transform =
+        `translateX(-${thumbPosition}px)`;
+
+});
+
+
+thumbPrev.addEventListener("click", () => {
+
+    thumbPosition -= 260;
+
+    if (thumbPosition < 0) {
+        thumbPosition = 0;
+    }
+
+    thumbTrack.style.transform =
+        `translateX(-${thumbPosition}px)`;
+
+});
