@@ -1,3 +1,10 @@
+window.addEventListener("error", function(e) {
+    if (e.filename && e.filename.includes("global.js")) {
+        e.preventDefault();
+        console.log("Ignoring theme focus-trap error (not related to add to cart)");
+    }
+});
+
 (function() {
     var price = 0;
     var variantId = "";
@@ -7,7 +14,7 @@
     var save = 0;
     var caps = 30;
 
-    // MONEY FORMAT FUNCTION YAHAN ADD KARO
+    // MONEY FORMAT FUNCTION 
     function formatMoney(price) {
         var amount = Math.round(Number(price));
 
@@ -59,23 +66,6 @@
         updatePrice();
 
     }
-    // SUBSCRIPTION
-    var purchase = document.querySelectorAll(
-        '.nmn-purchase-toggle input'
-    );
-
-    for (var i = 0; i < purchase.length; i++) {
-        purchase[i].onchange = function() {
-            var labels = document.querySelectorAll(".ptoggle");
-            labels.forEach(function(label) {
-                label.classList.remove("is-active");
-            });
-            this.parentElement.classList.add("is-active");
-            subscribe = this.value === "subscribe";
-            updatePrice();
-
-        }
-    }
 
     // PRICE FUNCTION
 
@@ -93,18 +83,12 @@
             discount = 25;
         }
 
-        // subscription extra
-        if (subscribe) {
-            discount = discount + 5;
-        }
-
         var save = total * discount / 100;
         var final = total - save;
         // 
         var saveRow = document.querySelector(".save-row");
 
         if (saveRow) {
-
             if (discount > 0) {
                 saveRow.classList.remove("hidden");
             } else {
@@ -132,9 +116,6 @@
 
     }
 
-
-    // updatePrice();
-
     function updateStickyBar(save) {
         var sticky = document.querySelector(".nmn-sticky-bar");
         var stickySave = document.querySelector(".js-sticky-save");
@@ -144,7 +125,6 @@
 
         if (save > 0) {
             sticky.classList.add("is-visible");
-
 
             if (stickySave) {
                 stickySave.innerHTML = Math.round(save);
@@ -247,8 +227,6 @@
 
     // ADD TO CART BUTTON LOADING
 
-    // var addButton = document.querySelector(".nmn-add-to-cart");
-
     if (addButton) {
         addButton.onclick = function() {
             addButton.disabled = true;
@@ -303,7 +281,11 @@
 
                     if (drawer && data.sections) {
 
-                        drawer.renderContents(data);
+                        try {
+                                drawer.renderContents(data);
+                            } catch (e) {
+                                console.log("Ignoring theme error:", e);
+                            }
 
                         // Remove empty state after adding item
                         setTimeout(function() {
@@ -331,7 +313,7 @@
                 })
                 .catch(function(error) {
                     console.log(error);
-                    alert("Product add nahi hua. Dobara try karein.");
+                    alert("Product not added");
                     addButton.disabled = false;
                     addButton.querySelector(".btn-label").innerHTML =
                         "Add to Cart";
@@ -365,27 +347,19 @@ function showSlide(index) {
     if (index >= slides.length) {
         index = 0;
     }
-
     if (index < 0) {
         index = slides.length - 1;
     }
 
-
     mainTrack.style.transform =
         `translateX(-${index * 100}%)`;
-
 
     thumbnails.forEach(img => {
         img.classList.remove("active");
     });
 
-
     thumbnails[index].classList.add("active");
-
-
     current = index;
-
-
     // auto scroll thumbnail
 
     thumbnails[index].scrollIntoView({
@@ -396,42 +370,23 @@ function showSlide(index) {
 
 }
 
-
-
 nextBtn.addEventListener("click", () => {
-
     showSlide(current + 1);
-
 });
-
 
 prevBtn.addEventListener("click", () => {
-
     showSlide(current - 1);
-
 });
-
-
 
 thumbnails.forEach(img => {
-
     img.addEventListener("click", () => {
-
         showSlide(Number(img.dataset.index));
-
     });
-
 });
-
-
-
 
 // THUMBNAIL SLIDER
 let thumbPosition = 0;
-
-
 thumbNext.addEventListener("click", () => {
-
     thumbPosition += 260;
 
     if (thumbPosition > thumbTrack.scrollWidth - 510) {
@@ -440,12 +395,9 @@ thumbNext.addEventListener("click", () => {
 
     thumbTrack.style.transform =
         `translateX(-${thumbPosition}px)`;
-
 });
 
-
 thumbPrev.addEventListener("click", () => {
-
     thumbPosition -= 260;
 
     if (thumbPosition < 0) {
@@ -454,5 +406,4 @@ thumbPrev.addEventListener("click", () => {
 
     thumbTrack.style.transform =
         `translateX(-${thumbPosition}px)`;
-
 });
